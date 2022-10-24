@@ -61,7 +61,7 @@ Create point-to-point tunnel by Tun/Tap
 ```mermaid
 graph TD;
     LeftApp --> LeftVisualTun --> LeftTun --> LeftVPN;
-    LeftVPN1 --> Tunnel --> RightVPN1;
+    LeftVPN1(LeftVPN) --> Tunnel --> RightVPN1(RightVPN);
     RightVPN --> RightTun --> RightVisualTun --> RightSocket --> RightApp;
 ```
 
