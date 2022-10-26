@@ -1,3 +1,35 @@
+
+## protocal
+
+dir    2bit
+size   14bit
+type   8bit
+nr     8bit
+
+### dir
+(direction)，ioctl命令访问模式（数据传输方向），占据2bit，可以为_IOC_NONE、_IOC_READ、_IOC_WRITE、_IOC_READ | _IOC_WRITE，分别指示了四种访问模式：无数据、读数据、写数据、读写数据；
+### type
+(device type)，设备类型，占据8bit，在一些文献中翻译为“幻数”或者“魔数”，可以为任意char型字符，例如‘a’、‘b’、‘c’等等，其主要作用是使ioctl命令有唯一的设备标识。tips：Documentions/ioctl-number.txt记录了在内核中已经使用的“魔数”字符，为避免冲突，在自定义ioctl命令之前应该先查阅该文档。
+
+### nr
+(number)，命令编号/序数，占据8bit，可以为任意unsigned char型数据，取值范围0~255，如果定义了多个ioctl命令，通常从0开始编号递增；
+
+### size
+涉及到ioctl第三个参数arg，占据13bit或者14bit（体系相关，arm架构一般为14位），指定了arg的数据类型及长度，如果在驱动的ioctl实现中不检查，通常可以忽略该参数。
+
+```c
+// include/uapi/asm-generic/ioctl.h
+
+#define _IOC(dir,type,nr,size) \
+    (((dir)  << _IOC_DIRSHIFT) | \
+     ((type) << _IOC_TYPESHIFT) | \
+     ((nr)   << _IOC_NRSHIFT) | \
+     ((size) << _IOC_SIZESHIFT))
+```
+
+
+
+
 ## driver
 
 ``` c
@@ -141,3 +173,8 @@ int main(int argc, char **argv)
     return 0;
 }
 ```
+
+## References
+
+- https://zhuanlan.zhihu.com/p/478247461
+- https://baike.baidu.com/item/ioctl/6392403?fr=aladdin

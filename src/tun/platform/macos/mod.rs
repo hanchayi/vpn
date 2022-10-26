@@ -3,6 +3,7 @@ use crate::tun::error::*;
 
 pub mod sys;
 mod device;
+mod queue;
 
 use crate::tun::configuration::Configuration as C;
 
