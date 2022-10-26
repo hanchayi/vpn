@@ -64,6 +64,7 @@ impl Device {
                         // The control name
                         ctl_name: {
                             let mut buffer = [0; 96];
+                            //  UTUN_CONTROL_NAME is a registered kernel control
                             for (i, o) in UTUN_CONTROL_NAME.as_bytes().iter().zip(buffer.iter_mut()) {
                                 *o = *i as _; 
                             }
@@ -71,7 +72,7 @@ impl Device {
                         }
                     };
 
-                    // Config ioctl
+                    // Config ioctl: Get ID for kernel control
                     if ctliocginfo(
                         tun.0, 
                         &mut info as *mut _ as *mut _
@@ -79,9 +80,9 @@ impl Device {
                         return Err(Error::IOControlConfigError);
                     }
 
-                    // Init socket addr
+                    // Init system socket addr
                     let addr = sockaddr_ctl {
-                        sc_id: info.ctl_id,
+                        sc_id: info.ctl_id, // kernel control id
                         sc_len: mem::size_of::<sockaddr_ctl>() as _,
                         sc_family: AF_SYSTEM,
                         ss_sysaddr: AF_SYS_CONTROL,
@@ -348,6 +349,6 @@ mod test {
 
     #[test]
     fn test_new() {
-        let device = Device::new(Configuration::default().name("utun4"));
+        let device = Device::new(Configuration::default().name("utun5"));
     }
 }

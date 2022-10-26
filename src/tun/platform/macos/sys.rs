@@ -93,6 +93,13 @@ pub struct ifaliasreq {
 | 8 bit    | 8 bit  |2 bit |8~14 bit|
 |----------|--------|------|--------|
  */
+
+ /**
+  * 'N' -> ioty
+  * 3  -> nr
+  * ctl_info -> data struct
+  * iorw(ioty, nr, data)
+  */
 ioctl!(readwrite ctliocginfo with 'N', 3; ctl_info);
 
 ioctl!(write siocsifflags with 'i', 16; ifreq);
