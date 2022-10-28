@@ -10,6 +10,7 @@ use std::mem;
 use std::io::{self, Read, Write};
 use std::ptr;
 use std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
+use std::net::Ipv4Addr;
 
 use crate::tun::platform::macos::queue::Queue;
 
@@ -104,23 +105,25 @@ impl Device {
                     let mut name = [0u8; 64];
                     let mut name_len: socklen_t = 64;
 
+                    // Get socket opt and save to optval
                     if libc::getsockopt(
-                        tun.0,
-                        SYSPROTO_CONTROL,
-                        UTUN_OPT_IFNAME,
-                        &mut name as *mut _ as *mut c_void,
-                        &mut name_len as *mut socklen_t,
+                        tun.0, // socket file descriptor
+                        SYSPROTO_CONTROL, // system control
+                        UTUN_OPT_IFNAME, // opt name
+                        &mut name as *mut _ as *mut c_void, // opt val ptr
+                        &mut name_len as *mut socklen_t, // opt val length
                     ) < 0
                     {
                         return Err(Error::GetSocketOptError);
                     }
 
-                    // Create internet socket
+                    // Create ctrl socket for ioctl first param 
                     let ctl_res = Fd::new(libc::socket(AF_INET, SOCK_DGRAM, 0));
 
                     match ctl_res {
                         Ok(ctl) => {
                             Device {
+                                // socket opt name
                                 name: CStr::from_ptr(name.as_ptr() as *const c_char)
                                     .to_string_lossy()
                                     .into(),
@@ -144,7 +147,7 @@ impl Device {
     }
 
 
-     /// Prepare a new request.
+     /// Prepare a new if request.
      pub unsafe fn request(&self) -> ifreq {
         // use zero init
         let mut req: ifreq = mem::zeroed();
@@ -157,6 +160,29 @@ impl Device {
 
         req
     }
+
+    /// Set the IPv4 alias of the device.
+    pub fn set_alias(&mut self, addr: Ipv4Addr, broadaddr: Ipv4Addr, mask: Ipv4Addr) -> Result<()> {
+        unsafe {
+            let mut req: ifaliasreq = mem::zeroed();
+            ptr::copy_nonoverlapping(
+                self.name.as_ptr() as *const c_char,
+                req.ifran.as_mut_ptr(),
+                self.name.len(),
+            );
+
+            req.addr = SockAddr::from(addr).into();
+            req.broadaddr = SockAddr::from(broadaddr).into();
+            req.mask = SockAddr::from(mask).into();
+
+            if siocaifaddr(self.ctl.as_raw_fd(), &req) < 0 {
+                return Err(Error::AddRouteError);
+            }
+
+            Ok(())
+        }
+    }
+
 
 }
 
@@ -298,6 +324,7 @@ impl D for Device {
         todo!()
     }
 
+    // max transfer unit
     fn set_mtu(&mut self, value: i32) -> Result<()> {
         unsafe {
             let mut req = self.request();

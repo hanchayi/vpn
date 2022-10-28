@@ -65,7 +65,15 @@ graph TD;
     RightVPN --> RightTun --> RightVisualTun --> RightSocket --> RightApp;
 ```
 
+```mermaid
+graph LR;
+    AppA --1--> Socket --2--> ProtocolStack --3--> Routes;
+    Routes --4--> Tun0 --5--> AppB;
+    AppB --6--> Socket --7--> Eth0 --8--> NetDevice
+```
+
 
 ## Reference
 
 - [Linux Tun/Tap 介绍](https://www.zhaohuabing.com/post/2020-02-24-linux-taptun/)
+- [虚拟设备之TUN和TAP](https://zhuanlan.zhihu.com/p/260405786?utm_medium=social&utm_oi=1074400359216099328&utm_psn=1569303558859833344&utm_source=wechat_session)

@@ -56,7 +56,9 @@ pub enum Error {
 
     #[error("siocsifflags error")]
     SiocsifflagsError,
-    
+
+    #[error("add route error")]
+    AddRouteError,
    
 }
 
